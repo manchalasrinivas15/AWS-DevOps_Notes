@@ -1,0 +1,23 @@
+1. Day begins with checking the mail's ( common for all software employees)
+
+2. Will check the pending tickets
+
+3. Will get deployment tickets
+
+4. We will do enhancement on daily automation tasks 
+
+5. Will do R & D for new tools 
+
+6. Will attend the scrum calls daily ( on some organisations it's cadence call or daily sync up call)
+
+7. Will maintain and update spread sheets for environments and clients 
+
+8. Will work on CI/CD Pipeline mostly 
+
+9. Mostly need to learn the tools and services
+
+10. Checks the infrastructure and try to cut the cloud expenditure
+
+11. Will do patching for cloud serves on weekly basis
+
+12. Clean old builds in Jenkins for every 2 months

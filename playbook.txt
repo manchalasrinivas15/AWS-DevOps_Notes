@@ -1,0 +1,108 @@
+---
+- hosts: test
+  connection: ssh
+
+
+  tasks:
+   - name: install git
+     yum: name=git state=present
+
+   - name: install java
+     action: yum name=java-1.8.0-openjdk state=present
+
+   - name: install maven
+     yum: name=maven state=present
+
+   - name: instal java11
+     command: amazon-linux-extras install java-openjdk11 -y
+...
+
+---
+- hosts: all
+  connection: ssh
+
+
+  tasks:
+   - name: install httpd
+     yum: name=httpd state=present
+
+   - name: start the webserver
+     service: name=httpd state=started
+... 
+
+---
+- hosts: all
+  connection: ssh
+
+
+  tasks:
+    - name: create a file
+      copy:
+        dest: "/var/www/html/index.html"
+        content: |
+          <h1> this is welcome program</h1>
+...
+
+---
+- hosts: test
+  connection: ssh
+
+  tasks:
+    - name: install java11
+      command: amazon-linux-extras install java-openjdk11 -y
+
+    - name: download the repo from jenkins.io
+      get_url:
+        url: "https://pkg.jenkins.io/redhat-stable/jenkins.repo"
+        dest: "/etc/yum.repos.d/jenkins.repo"
+
+    - name: download the key from jenkins.io
+      ansible.builtin.rpm_key:
+        key: "https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key"
+        state: present
+
+    - name: jenkins install
+      yum: name=jenkins state=present
+
+    - name: jenkins start
+      service: name=jenkins state=started
+...
+
+
+---
+- hosts: test 
+  connection: ssh
+  
+
+  tasks: 
+     - name: install java
+       yum: name=java-1.8.0-openjdk state=present
+
+     - name: get url from tomcatfile
+       get_url:
+         url: "https://downloads.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz"
+         dest: "/root"
+
+     - name: untar the file 
+       command: tar -zxvf apache-tomcat-9.0.85.tar.gz
+
+     - name: rename the file name with tomcat
+       command: mv apache-tomcat-9.0.85 tomcat
+       tags: abc
+
+
+     - name: copy the context file
+       copy: 
+         src: "context.xml"
+         dest: "/root/tomcat/webapps/manager/META-INF/context.xml"
+     
+     - name: copy tomat-users.xml file
+       copy:
+          src: "tomcat-users.xml"
+          dest: "/root/tomcat/conf/tomcat-users.xml"
+
+     - name: stop the tomcat
+       shell: nohup /root/tomcat/bin/shutdown.sh
+
+     - name: start the tomcat
+       shell: nohup /root/tomcat/bin/startup.sh

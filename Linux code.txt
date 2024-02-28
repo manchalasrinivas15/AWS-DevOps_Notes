@@ -1,0 +1,142 @@
+*******Jenkins*******
+
+amazon-linux-extras install java-openjdk11 -y
+ sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+  sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+   yum install jenkins -y
+    systemctl start jenkins
+      yum install git -y
+                                                        
+yum install java-1.8.0-openjdk -y
+yum install maven -y
+
+********Apache Tomcat*****
+
+amazon-linux-extras install java-openjdk11 -y
+ wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.85/bin/apache-tomcat-9.0.85.tar.gz
+   tar -zxvf apache-tomcat-9.0.85.tar.gz
+    cd /apache-tomcat-9.0.85/bin/
+      sh startup.sh
+
+Jenkins Plugin: Deploy to container 
+
+**********Sonar*****************
+
+amazon-linux-extras install java-openjdk11 -y
+cd /opt/
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-8.9.6.50800.zip
+unzip filename
+useradd sonar
+chown sonar:sonar filename  -R
+chmod 777 filename -R
+su - sonar
+cd /opt
+cd sonar—/bin/linux/
+./sonar.sh start
+./sonar status
+
+
+**********Nexus********
+
+yum install java-1.8.0-openjdk -y
+mkdir /app && cd /app
+wget -O nexus.tar.gz https://download.sonatype.com/nexus/3/latest-unix.tar.gz
+tar -zxvf nexus.tar.gz
+mv nexus-3* nexus
+useradd nexus
+chown nexus:nexus nexus sonatype-work -R
+cd /app/nexus/bin/nexus.rc (run_as_user="nexus")
+cd /nexus/etc/systemd/system/	
+vim nexus.service(copy and paste the below)	
+
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/app/nexus/bin/nexus start
+ExecStop=/app/nexus/bin/nexus stop
+User=nexus
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+
+chkconfig nexus on
+systemctl start nexus
+systemctl enable nexus
+systemctl status nexus.service
+systemctl status nexus.service
+
+Jenkins Plugin: nexus artifact uploader
+
+*******************Ansible***************
+amazon-linux-extras install ansible2 -y
+yum install python-pip -y
+useradd ansible
+passwd ansible
+visudo (in 100 line add ansible All=All NOPASSWD= All)
+vi /etc/ssh/sshd_config (in 63 line add Passwordauthentication yes)
+systemctl restart sshd
+
+---creating inventory
+cd /etc/ansible/
+vim ansible.cfy (activate inventory and user)
+vim hosts
+[dev]
+ip address 01
+ipaddress 02
+[test]
+ipaddress 03
+ipaddress 04
+su ansible
+ssh-keygen
+ssh-copy-id ansible@slaveip01 (yes - password of slave01)
+ssh-copy-id ansible@slaveip02 (yes - password of slave02)
+ssh-copy-id ansible@slaveip03 (yes - password of slave03)
+ssh-copy-id ansible@slaveip04 (yes - password of slave04)
+
+---playbook
+vim srinivas.yml
+---
+- hosts: test
+  user: ansible
+  become: yes
+  connection: ssh
+
+  tasks:
+    - name: this is git installation
+      action: yum name=git state=present
+...
+ansible-playbook srinivas.yml
+
+***********Docker*************
+----Docker Swarm setup
+
+yum install docker -y systemctl start docker
+manager - docker swarm init --advertise-addr pvt_ip of manager (gets worker url)
+worker01 - paste the url from manager
+worker02 - paste the url from manager
+
+
+----Docker Compose setup commands
+
+yum install docker -y && systemctl start docker 
+
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+ls /usr/local/bin/
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose version
+
+
+----docker portainer setup commands
+curl -L https://downloads.portainer.io/ce2-16/portainer-agent-stack.yml -o portainer-agent-stack.yml
+docker stack deploy -c portainer-agent-stack.yml portainer
+docker ps
+
+
